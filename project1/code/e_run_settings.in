@@ -1,0 +1,3 @@
+variable temp equal 1.0        
+variable density equal 0.02        
+variable outfile string e_datafile_T10_d002.txt

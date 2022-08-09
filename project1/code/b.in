@@ -1,0 +1,38 @@
+# 3d Lennard-Jones gas
+units lj
+dimension 3
+boundary p p p
+atom_style atomic
+
+lattice fcc 0.01
+region simbox block 0 10 0 10 0 10
+create_box 1 simbox
+create_atoms 1 box
+
+mass 1 1.0
+velocity all create 2.5 87287
+
+pair_style lj/cut 8.0
+pair_coeff 1 1 1.0 1.0 8.0
+
+include b_run_settings.in
+
+fix 1 all nve
+
+thermo_style custom step temp etotal pe ke
+
+compute ke all ke
+compute pe all pe
+variable etot equal c_ke+c_pe
+
+variable Nevery equal 1 # interval of timesteps inclusion
+variable Nrepeat equal 1 # number of recent timesteps to include
+variable Nfreq equal 1 # calculate averages every this many timesteps
+
+timestep ${timestep}
+fix output_etotal all ave/time ${Nevery} ${Nrepeat} ${Nfreq} c_ke c_pe v_etot file ${outfile}
+dump mydump all custom 10 1b.dump id type x y z vx vy vz
+
+
+thermo 100
+run ${run}

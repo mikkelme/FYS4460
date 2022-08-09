@@ -1,0 +1,28 @@
+#Compiled files
+*.exe
+*.o
+
+#Latex
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
+*.out
+*.toc
+*.bib
+
+#Data (txt and dump)
+*.txt
+*.data
+*.dump
+
+#Mac files
+*.DS_Store
+
+#Big arrays
+*.npy
+
+#Folders
+__pycache__/
+

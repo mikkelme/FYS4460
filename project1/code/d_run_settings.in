@@ -1,0 +1,2 @@
+variable temp equal 5.0         
+variable outfile string d_etot_T50.txt

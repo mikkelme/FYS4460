@@ -1,0 +1,41 @@
+
+
+# ----------------- Init Section -----------------
+
+include "spce-water-system.in.init"
+
+
+# ----------------- Atom Definition Section -----------------
+
+read_data "spce-water-system.data"
+
+# ----------------- Settings Section -----------------
+
+include "spce-water-system.in.settings"
+
+# ----------------- Run Section -----------------
+
+
+# Get temperature from setting-file
+include m_run_settings.in
+timestep    1.0
+#dump        1 all custom 10 water_dump.data id mol type x y z ix iy iz
+fix         fxnpt all npt temp ${myTemp} ${myTemp} 100.0 iso 1.0 1.0 1000.0 drag 1.0
+
+# Stabilize system
+thermo 100
+run 3000
+
+# Compute
+#compute temp all temp
+compute myRDF all rdf 200 1 1 #cutoff 10.0
+
+# Output
+variable Nevery equal 1 #interval of timesteps inclusion
+variable Nrepeat equal 1  #number of times to include timesteps from interval
+variable Nfreq equal 3000 #calculate averages every this many timesteps
+
+fix output_rdf all ave/time ${Nevery} ${Nrepeat} ${Nfreq} c_myRDF[*] file m_data_radial/m_rdf_${myTemp}.txt mode vector
+
+thermo      100
+run         3000

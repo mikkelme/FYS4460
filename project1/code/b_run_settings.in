@@ -1,0 +1,3 @@
+variable run equal 999        
+variable timestep equal 0.020000000000000004        
+variable outfile string etotal020000000000000004.txt

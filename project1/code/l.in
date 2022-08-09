@@ -1,0 +1,77 @@
+# run this on multiple partitions as
+# mpirun -np 3 lmp_g++ -partition 3x1 -in in.tad
+
+units               metal
+atom_style          atomic
+atom_modify         map array
+boundary            p p p
+atom_modify sort    0 0.0
+
+#temperature
+#variable myTemp equal 400.0
+include l_run_settings.in
+
+#diamond unit cell
+variable myL equal 10
+variable myscale equal 1
+
+variable a equal 5.431*${myscale}
+lattice         custom $a             &
+                a1 1.0 0.0 0.0        &
+                a2 0.0 1.0 0.0        &
+                a3 0.0 0.0 1.0        &
+                basis 0.0 0.0 0.0     &
+                basis 0.0 0.5 0.5     &
+                basis 0.5 0.0 0.5     &
+                basis 0.5 0.5 0.0     &
+                basis 0.25 0.25 0.25  &
+                basis 0.25 0.75 0.75  &
+                basis 0.75 0.25 0.75  &
+                basis 0.75 0.75 0.25
+
+region          myreg block     0 ${myL} &
+                                0 ${myL} &
+                                0 ${myL}
+create_box      1 myreg
+create_atoms    1 region myreg
+
+mass            1        28.06
+
+group SI type 1
+
+velocity all create ${myTemp} 5287286 mom yes rot yes dist gaussian
+
+pair_style        sw
+pair_coeff * *    Si.sw Si
+
+neighbor          1.0 bin
+neigh_modify      every 1 delay 10 check yes
+
+timestep          1.0e-3
+#fix               #1 all nve
+fix 1 all nvt temp ${myTemp} ${myTemp} 2.0 # Noose-Hoover thermostat
+
+
+#Stabilize system
+thermo 100
+run 20000
+
+#Mean pressure
+compute temp all temp
+compute msd all msd
+
+
+variable Nevery equal 1 # interval of timesteps inclusion
+variable Nrepeat equal 10 # number of recent timesteps to include
+variable Nfreq equal 10 # calculate averages every this many timesteps
+
+fix output all ave/time ${Nevery} ${Nrepeat} ${Nfreq} c_temp c_msd[4] file l_msd${myTemp}.txt
+#fix output all ave/time ${Nevery} ${Nrepeat} ${Nfreq} c_msd[4] file l_msd${myTemp}.txt
+
+
+
+#Run simulations
+thermo 100
+thermo_style custom step temp press
+#dump 1 all custom 10 l_${myTemp}.data id type x y z vx vy vz
+run 10000
